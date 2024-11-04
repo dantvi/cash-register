@@ -4,4 +4,20 @@ html {
 
 body {
     margin: 0;
+    color: white;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+}
+
+main {
+    margin-top: 80px;
+    width: 60%;
+    text-align: center;
+    background-color: rgb(50, 50, 50);
+    border-radius: 20px;
+}
+
+input {
+    margin-top: 10px;
 }
