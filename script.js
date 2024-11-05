@@ -28,9 +28,50 @@ const register = {
   "Hundreds": 100
 };
 
-const calculateChange = (cashFromCustomer, total) => {
 
-}
+
+const calculateChange = (cashFromCustomer, total) => {
+  const changeNeeded = cashFromCustomer - total;
+  let changeGiven = {};
+  let remainingChange = changeNeeded;
+
+  // Iterate over each currency unit in descending order
+  for (let unit in currencyValues) {
+    const unitValue = currencyValues[unit];
+    const amountInRegister = register[unit];
+
+    // Calculate how many of this unit can be given as change
+    const amountNeeded = Math.floor(remainingChange / unitValue);
+    const amountAvailable = Math.floor(amountInRegister / unitValue);
+    const amountToGive = Math.min(amountNeeded, amountAvailable);
+
+    if (amountToGive > 0) {
+      changeGiven[unit] = amountToGive * unitValue; // Add this unit to the change given
+      remainingChange -= amountToGive * unitValue;
+      register[unit] -= amountToGive * unitValue; // Deduct from the register
+    }
+  }
+
+  if (remainingChange > 0.01) { // Allow a small margin for rounding errors
+    return "Not enough change available";
+  }
+
+  // Update and display the change to be given
+  let changeText = "";
+  for (let unit in changeGiven) {
+    changeText += `${unit}: $${changeGiven[unit].toFixed(2)}\n`;
+  }
+  changeDueEl.innerText = changeText;
+
+  // Update the register contents in the interface
+  let registerText = "";
+  for (let unit in register) {
+    registerText += `${unit}: $${register[unit].toFixed(2)}\n`;
+  }
+  changeInRegisterEl.innerText = registerText;
+
+  return changeGiven;
+};
 
 const checkCashFromCustomer = (e) => {
   e.prevent.default();
