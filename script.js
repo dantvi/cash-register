@@ -28,8 +28,17 @@ const register = {
   "Hundreds": 100
 };
 
+// Function to display the current cash in the register
+const showChangeInRegister = () => {
+  changeInRegisterEl.innerHTML = "";
+  for (let unit in register) {
+    const unitEl = document.createElement('p');
+    unitEl.innerText = `${unit}: $${register[unit].toFixed(2)}`;
+    changeInRegisterEl.append(unitEl);
+  }
+}
 
-
+// Function to calculate and display the change to be given to the customer
 const calculateChange = (cashFromCustomer, total) => {
   const changeNeeded = cashFromCustomer - total;
   let changeGiven = {};
@@ -63,27 +72,30 @@ const calculateChange = (cashFromCustomer, total) => {
   }
   changeDueEl.innerText = changeText;
 
-  // Update the register contents in the interface
-  let registerText = "";
-  for (let unit in register) {
-    registerText += `${unit}: $${register[unit].toFixed(2)}\n`;
-  }
-  changeInRegisterEl.innerText = registerText;
-
   return changeGiven;
 };
 
+// Function to check if the customer has enough cash and calculate change if applicable
 const checkCashFromCustomer = (e) => {
-  e.prevent.default();
+  e.preventDefault();
   const cashFromCustomer = parseFloat(cashFromCustomerEl.value);
   const total = parseFloat(totalEl.value);
+
   if (cashFromCustomer < total) {
     alert("Customer does not have enough money to purchase the item");
   } else if (cashFromCustomer === total) {
     changeDueEl.innerText = "No change due - customer paid with exact cash";
   } else {
-    calculateChange(cashFromCustomer, total);
+    const changeResult = calculateChange(cashFromCustomer, total);
+    if (typeof changeResult === "string") {
+      alert(changeResult); // Display "Not enough change available" if applicable
+    } else {
+      showChangeInRegister(); // Update register display only if change was given
+    }
   }
 }
 
 btnEl.addEventListener("click", checkCashFromCustomer);
+
+// Initialize display of register contents on page load
+showChangeInRegister();
