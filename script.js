@@ -32,7 +32,6 @@ let cid = [
 // Function to display the current cash in the register
 const showChangeInRegister = () => {
   changeInRegisterEl.innerHTML = "";
-
   cid.forEach(([unit, amount]) => {
     const unitEl = document.createElement('p');
     unitEl.innerText = `${unit}: $${amount.toFixed(2)}`;
@@ -43,23 +42,25 @@ const showChangeInRegister = () => {
 // Function to calculate and display the change to be given to the customer
 const calculateChange = (cashFromCustomer, total) => {
   const changeNeeded = cashFromCustomer - total;
-  let changeGiven = {};
   let remainingChange = changeNeeded;
+  let changeGiven = [];
 
-  // Iterate over each currency unit in descending order
-  for (let unit in currencyValues) {
+  // Iterate over each currency unit in descending order using cid
+  for (let i = cid.length - 1; i >= 0; i--) {
+    const [unit, amountInDrawer] = cid[i];
     const unitValue = currencyValues[unit];
-    const amountInRegister = register[unit];
+    let amountToGive = 0;
 
     // Calculate how many of this unit can be given as change
-    const amountNeeded = Math.floor(remainingChange / unitValue);
-    const amountAvailable = Math.floor(amountInRegister / unitValue);
-    const amountToGive = Math.min(amountNeeded, amountAvailable);
+    while (remainingChange >= unitValue && amountInDrawer >= amountToGive + unitValue) {
+      remainingChange -= unitValue;
+      remainingChange = Math.round(remainingChange * 100) / 100; // Avoid precision errors
+      amountToGive += unitValue;
+    }
 
     if (amountToGive > 0) {
-      changeGiven[unit] = amountToGive * unitValue; // Add this unit to the change given
-      remainingChange -= amountToGive * unitValue;
-      register[unit] -= amountToGive * unitValue; // Deduct from the register
+      changeGiven.push([unit, amountToGive]); // Add this unit to the change given
+      cid[i][1] -= amountToGive; // Deduct from cid
     }
   }
 
@@ -68,10 +69,8 @@ const calculateChange = (cashFromCustomer, total) => {
   }
 
   // Update and display the change to be given
-  let changeText = "";
-  for (let unit in changeGiven) {
-    changeText += `${unit}: $${changeGiven[unit].toFixed(2)}\n`;
-  }
+  let changeText = "Status: OPEN ";
+  changeText += changeGiven.map(([unit, amount]) => `${unit}: $${amount.toFixed(2)}`).join(" ");
   changeDueEl.innerText = changeText;
 
   return changeGiven;
