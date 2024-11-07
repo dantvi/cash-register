@@ -44,8 +44,20 @@ const calculateChange = (cashFromCustomer, total) => {
   const changeNeeded = cashFromCustomer - total;
   let remainingChange = changeNeeded;
   let changeGiven = [];
+  let totalInDrawer = cid.reduce((sum, [unit, amount]) => sum + amount, 0);
+  totalInDrawer = Math.round(totalInDrawer * 100) / 100; // Avoid precision errors
 
-  // Iterate over each currency unit in descending order using cid
+  // Check if the total cash in drawer is less than change needed
+  if (totalInDrawer < changeNeeded) {
+    return { status: "INSUFFICIENT_FUNDS", change: [] };
+  }
+
+  // Check if total cash in drawer exactly matches change needed
+  if (totalInDrawer === changeNeeded) {
+    return { status: "CLOSED", change: cid };
+  }
+
+  // Calculate change to give from highest to lowest currency unit
   for (let i = cid.length - 1; i >= 0; i--) {
     const [unit, amountInDrawer] = cid[i];
     const unitValue = currencyValues[unit];
@@ -65,15 +77,10 @@ const calculateChange = (cashFromCustomer, total) => {
   }
 
   if (remainingChange > 0.01) { // Allow a small margin for rounding errors
-    return "Not enough change available";
+    return { status: "INSUFFICIENT_FUNDS", change: [] };
   }
 
-  // Update and display the change to be given
-  let changeText = "Status: OPEN ";
-  changeText += changeGiven.map(([unit, amount]) => `${unit}: $${amount.toFixed(2)}`).join(" ");
-  changeDueEl.innerText = changeText;
-
-  return changeGiven;
+  return { status: "OPEN", change: changeGiven };
 };
 
 // Function to check if the customer has enough cash and calculate change if applicable
@@ -87,15 +94,23 @@ const checkCashFromCustomer = (e) => {
   } else if (cashFromCustomer === total) {
     changeDueEl.innerText = "No change due - customer paid with exact cash";
   } else {
-    const changeResult = calculateChange(cashFromCustomer, total);
-    if (typeof changeResult === "string") {
-      alert(changeResult); // Display "Not enough change available" if applicable
-    } else {
-      showChangeInRegister(); // Update register display only if change was given
+    const result = calculateChange(cashFromCustomer, total);
+
+    if (result.status === "INSUFFICIENT_FUNDS") {
+      changeDueEl.innerText = "Status: INSUFFICIENT_FUNDS";
+    } else if (result.status === "CLOSED") {
+      let changeText = "Status: CLOSED";
+      changeText += result.change.map(([unit, amount]) => `${unit}: $${amount.toFixed(2)}`.join(" "));
+      changeDueEl.innerText = changeText;
+    } else if (result.status === "OPEN") {
+      let changeText = "Status: OPEN ";
+      changeText += result.change.map(([unit, amount]) => `${unit}: $${amount.toFixed(2)}`).join(" ");
+      changeDueEl.innerText = changeText;
     }
   }
 }
 
+// Event listener for the button click
 btnEl.addEventListener("click", checkCashFromCustomer);
 
 // Initialize display of register contents on page load
