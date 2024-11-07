@@ -2,18 +2,20 @@ const cashFromCustomerEl = document.getElementById('cash');
 const changeDueEl = document.getElementById('change-due');
 const btnEl = document.getElementById('purchase-btn');
 const changeInRegisterEl = document.getElementById('change-in-register');
-const totalEl = document.getElementById('total');
+
+let price = 2;
+document.getElementById('price-display').innerText = price.toFixed(2);
 
 const currencyValues = {
-  "Pennies": 0.01,
-  "Nickels": 0.05,
-  "Dimes": 0.1,
-  "Quarters": 0.25,
-  "Ones": 1,
-  "Fives": 5,
-  "Tens": 10,
-  "Twenties": 20,
-  "Hundreds": 100
+  "PENNY": 0.01,
+  "NICKEL": 0.05,
+  "DIME": 0.1,
+  "QUARTER": 0.25,
+  "ONE": 1,
+  "FIVE": 5,
+  "TEN": 10,
+  "TWENTY": 20,
+  "ONE HUNDRED": 100
 }
 
 // Initialize a 2D array for cash in drawer (cid)
@@ -87,25 +89,25 @@ const calculateChange = (cashFromCustomer, total) => {
 const checkCashFromCustomer = (e) => {
   e.preventDefault();
   const cashFromCustomer = parseFloat(cashFromCustomerEl.value);
-  const total = parseFloat(totalEl.value);
 
-  if (cashFromCustomer < total) {
+  if (cashFromCustomer < price) {
     alert("Customer does not have enough money to purchase the item");
-  } else if (cashFromCustomer === total) {
+  } else if (cashFromCustomer === price) {
     changeDueEl.innerText = "No change due - customer paid with exact cash";
   } else {
-    const result = calculateChange(cashFromCustomer, total);
+    const result = calculateChange(cashFromCustomer, price);
 
     if (result.status === "INSUFFICIENT_FUNDS") {
       changeDueEl.innerText = "Status: INSUFFICIENT_FUNDS";
     } else if (result.status === "CLOSED") {
       let changeText = "Status: CLOSED";
-      changeText += result.change.map(([unit, amount]) => `${unit}: $${amount.toFixed(2)}`.join(" "));
+      changeText += result.change.map(([unit, amount]) => `${unit}: $${amount.toFixed(2)}`).join(" ");
       changeDueEl.innerText = changeText;
     } else if (result.status === "OPEN") {
       let changeText = "Status: OPEN ";
       changeText += result.change.map(([unit, amount]) => `${unit}: $${amount.toFixed(2)}`).join(" ");
       changeDueEl.innerText = changeText;
+      showChangeInRegister();
     }
   }
 }
