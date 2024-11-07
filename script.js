@@ -16,26 +16,28 @@ const currencyValues = {
   "Hundreds": 100
 }
 
-const register = {
-  "Pennies": 0.97,
-  "Nickels": 2.05,
-  "Dimes": 2.9,
-  "Quarters": 3.75,
-  "Ones": 89,
-  "Fives": 55,
-  "Tens": 20,
-  "Twenties": 60,
-  "Hundreds": 100
-};
+// Initialize a 2D array for cash in drawer (cid)
+let cid = [
+  ["PENNY", 1.01],
+  ["NICKEL", 2.05],
+  ["DIME", 3.1],
+  ["QUARTER", 4.25],
+  ["ONE", 90],
+  ["FIVE", 55],
+  ["TEN", 20],
+  ["TWENTY", 60],
+  ["ONE HUNDRED", 100]
+];
 
 // Function to display the current cash in the register
 const showChangeInRegister = () => {
   changeInRegisterEl.innerHTML = "";
-  for (let unit in register) {
+
+  cid.forEach(([unit, amount]) => {
     const unitEl = document.createElement('p');
-    unitEl.innerText = `${unit}: $${register[unit].toFixed(2)}`;
+    unitEl.innerText = `${unit}: $${amount.toFixed(2)}`;
     changeInRegisterEl.append(unitEl);
-  }
+  });
 }
 
 // Function to calculate and display the change to be given to the customer
